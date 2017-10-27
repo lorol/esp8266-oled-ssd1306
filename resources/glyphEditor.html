@@ -1,3 +1,8 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>Glyph Editor</title>
 <!--The MIT License (MIT)
 
 Copyright (c) 2017 by Xavier Grosjean
@@ -31,9 +36,6 @@ SOFTWARE.
  100% quick and dirty vanilla ECS6, no framework or library was injured for this project.
 
 -->
-<html>
-  <head>
-    <meta charset="utf-8" />
     <style>
       #form, #chars table {
         user-select: none; 
@@ -91,48 +93,65 @@ SOFTWARE.
         width: 100%;
         height:120px;
       }
-	  #nextfont {
-	    display: none;
-	  }
+      #nextfont {
+       display: none;
+      }
       
     </style>
   </head>
   <body>
+   <center><h4>Glyph Font Editor, compatible with<br><a href="https://github.com/squix78/esp8266-oled-ssd1306">Squix78' OLED SD1306 screen library</a></h4></center>
+<ol>
+  <li><b>Startup alternatives</b></li>
+    <ul>
+     <li>Use provided example code: Click "Demo", then "Parse" button</li>
+     <li>Create own font from scratch: Specify font parameters and click "Create" button</li>
+     <li>Load a font from extranal .h file: use "Browse" button</li>
+     <li>If you modify the code in text area, use "Parse" button to apply changes</li>
+     <li>If code contains more fonts, parse the next from auto-detected code line on</li>
+    </ul>
+  <li><b>Edit chars</b></li>
+    <ul>
+     <li>Draw / erase char pixels by mouse click and drag</li>
+     <li>&cross; : Delete this char</li>
+     <li>+ : Add new char above</li>
+     <li>&larr;&darr;&uarr;&rarr; : Move all pixels</li>
+     <li>I : Import all pixels from another char</li>
+     <li>C : Clean all pixels of current char</li>
+     <li>"Add a character" button : Add new char at the end</li>
+    </ul>  
+  <li><b>Generate code</b></li>
+    <ul>
+     <li>Click "Generate" button to preview code</li>
+    </ul>  
+  <li><b>Save to file</b></li>
+    <ul>
+     <li>Click "Save To .." button to save generated code of current font to .h file</li>
+    </ul>  
+</ol>   
+<hr>
     <div id="form">
       <table width="100%">
         <tr>
-          <td>Font array name:</td><td><input placeholder="Font array name" type="text" id="name" value="My_Font"/></td>
+          <td>Font array name:</td><td><input placeholder="Font array name" type="text" id="name" /></td>
           <td width="75%" rowspan="5">
-            <textarea id="inputText" placeholder="Or paste a char array font definition here">
-const char My_Font[] PROGMEM = {
-  0x0A, // Width: 10
-  0x0D, // Height: 13
-  0x01, // First char: 1
-  0x02, // Number of chars: 2
-  // Jump Table:
-  0x00, 0x00, 0x13, 0x0A, // 1
-  0x00, 0x13, 0x14, 0x0A, // 2
-  // Font Data:
-  0xF0, 0x03, 0x10, 0x02, 0xF0, 0x03, 0x10, 0x02, 0xF0, 0x03, 0x10, 0x02, 0xF0, 0x03, 0x10, 0x02, 0xF0, 0x03, 0xC0, // 1
-  0x00, 0x0C, 0x80, 0x0B, 0x70, 0x08, 0x0C, 0x08, 0xF3, 0x0A, 0xF3, 0x0A, 0x0C, 0x08, 0x70, 0x08, 0x80, 0x0B, 0x00, 0x0C, // 2
-};              
-            </textarea></td>
+            <textarea id="inputText" placeholder="Or paste a char array font definition here"></textarea></td>
         </tr>
         <tr>
-          <td>First char code:</td><td><input placeholder="First char code" type="number" id="code" value="1" min="1"/></td>
+          <td>First char code:</td><td><input placeholder="First char code" type="number" id="code"  min="1"/></td>
         </tr>
         <tr>
-          <td>Width:</td><td><input placeholder="Font width" type="number" id="width" value="10"/></td>
+          <td>Width:</td><td><input placeholder="Font width" type="number" id="width" /></td>
         </tr>
         <tr>
-          <td>Height:</td><td><input placeholder="Font height" type="number" id="height" value="13" max="64"/></td>
+          <td>Height:</td><td><input placeholder="Font height" type="number" id="height" max="64"/></td>
         </tr>
         <tr>
           <td colspan="3"> </td>     <!--slightly improves layout-->
         </tr>
         <tr>
-          <td colspan="2"><button id="create">Create</button> <button id="generate">Generate</button> <button id="savetoFile">Save To File</button> </td>
-          <td><input type="file" id="fileinput" />  <button id="parse">Parse</button> <div id="nextfont">next font array from line <input placeholder="From line" type="number" id="low" value="0"/></div></td>
+          <td colspan="2"><button id="demo">Demo</button>  <button id="create">Create</button> </td>
+          <td><input type="file" id="fileinput" /> <button id="parse">Parse</button> <div id="nextfont">next font array from line <input placeholder="From line" type="number" id="low" value="0"/></div> <button id="generate">Generate</button> <button id="savetoFile">Save To File</button> </td>
         </tr>
       </table>
       <br/>
@@ -161,7 +180,7 @@ const char My_Font[] PROGMEM = {
           this.bytesForHeight = (1 + ((this.height - 1) >> 3));  // number of bytes needed for this font height
           document.body.className = "started";
           document.getElementById('height').disabled = true;
-          document.getElementById('width').disabled = true;          
+          document.getElementById('width').disabled = true;  
         }
         
         // Should we have a Char and a Pixel class ? not sure it's worth it.
@@ -185,8 +204,8 @@ const char My_Font[] PROGMEM = {
               + '<th title="Shift pixels down" action="down">&darr;</th>'
               + '<th title="Shift pixels up" action="up">&uarr;</th>'
               + '<th title="Shift pixels to the right" action="right">&rarr;</th>'
-              + '<th title="Copy from another character" action="copy">&copy;</th>'
-              + '<th title="Reset all pixels" action="clean">&empty;</th>';
+              + '<th title="Import pixels from another character" action="copy">I</th>'
+              + '<th title="Clean all pixels" action="clean">C</th>';
           // If data is provided, decode it to pixel initialization friendly structure
           let pixelInit = [];
           if (charData && charData.length) {
@@ -391,13 +410,33 @@ const char My_Font[] PROGMEM = {
       document.getElementById('generate').addEventListener('click', function() {
         font.generate();
       });
+
       document.getElementById('addChar').addEventListener('click', function() {
         font.addChar();
       });
-      document.getElementById('inputText').addEventListener('click', function(e) {
-        let target = e.target;
-        target.select();
+  
+      document.getElementById('inputText').addEventListener('dblclick', function(e) {
+       let target = e.target;
+       target.select();
       });
+      
+      document.getElementById('demo').addEventListener('click', function(e) {
+        document.getElementById('low').value = 0;
+        document.getElementById('nextfont').style.display = 'none';
+        document.getElementById('inputText').value = 'const char My_Font[] PROGMEM = {\n'
+            + '0x0A, // Width: 10\n'
+            + '0x0D, // Height: 13\n'
+            + '0x01, // First char: 1\n'
+            + '0x02, // Number of chars: 2\n'
+            + '// Jump Table:\n'
+            + '0x00, 0x00, 0x13, 0x0A, // 1\n'
+            + '0x00, 0x13, 0x14, 0x0A, // 2\n'
+            + '// Font Data:\n'
+            + '0xF0, 0x03, 0x10, 0x02, 0xF0, 0x03, 0x10, 0x02, 0xF0, 0x03, 0x10, 0x02, 0xF0, 0x03, 0x10, 0x02, 0xF0, 0x03, 0xC0, // 1\n'
+            + '0x00, 0x0C, 0x80, 0x0B, 0x70, 0x08, 0x0C, 0x08, 0xF3, 0x0A, 0xF3, 0x0A, 0x0C, 0x08, 0x70, 0x08, 0x80, 0x0B, 0x00, 0x0C, // 2\n'
+            + '};' 
+      });
+
       document.getElementById('chars').addEventListener('mousedown', function(e) {
         if (e.button !== 0) return;
         let target = e.target;
@@ -518,8 +557,11 @@ const char My_Font[] PROGMEM = {
       });
 
       document.getElementById('create').addEventListener('click', function() {
-      	font = new Font();
-        font.addChar();
+        if ((document.getElementById('name').value < 1)||(document.getElementById('code').value < 1)||(document.getElementById('width').value < 1)||(document.getElementById('height').value < 1)) alert("Populate font specifications.");
+        else {
+           font = new Font();
+           font.addChar();
+        }
       });
 
       // parse a char array declaration for an existing font.
