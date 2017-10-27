@@ -375,6 +375,8 @@ const char My_Font[] PROGMEM = {
                 +"starts with: " + contents.substr(0, contents.indexOf("\n")) 
             ); 
             document.getElementById("inputText").value = contents;
+		    document.getElementById('low').value = 0;
+			document.getElementById('nextfont').style.display = 'none';
           };
           r.readAsText(f);
         } else { 
