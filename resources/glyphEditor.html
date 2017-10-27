@@ -91,6 +91,9 @@ SOFTWARE.
         width: 100%;
         height:120px;
       }
+	  #nextfont {
+	    display: none;
+	  }
       
     </style>
   </head>
@@ -129,7 +132,7 @@ const char My_Font[] PROGMEM = {
         </tr>
         <tr>
           <td colspan="2"><button id="create">Create</button> <button id="generate">Generate</button> <button id="savetoFile">Save To File</button> </td>
-          <td><input type="file" id="fileinput" />  <button id="parse">Parse</button></td>
+          <td><input type="file" id="fileinput" />  <button id="parse">Parse</button> <div id="nextfont">next font array from line <input placeholder="From line" type="number" id="low" value="0"/></div></td>
         </tr>
       </table>
       <br/>
@@ -534,12 +537,12 @@ const char My_Font[] PROGMEM = {
         let readingJumpTable = false;
         let readingData = false;
         
-        for(let l = 0 ; l < lines.length; l++) {
+        for(let l = document.getElementById('low').value; l < lines.length; l++) {
           // TODO ? keep C compilation directives to copy them (not lowercased :)) to newly generated char array
           let line = lines[l].trim();
           //alert(line);
           let fields;
-
+		  
           // Declaration line: grab the name
           if (line.indexOf('PROGMEM') > 0) {
             fields = line.split(' ');
@@ -568,7 +571,9 @@ const char My_Font[] PROGMEM = {
           }
           // End of array declaration
           // TODO warn if more lines: next fonts are ignored
-          if (line.indexOf('};') === 0) {
+          if ((line.indexOf('};') === 0) || (line.indexOf('};') > 0)) {
+		    document.getElementById('low').value = l + 1;
+			document.getElementById('nextfont').style.display = 'inline-block';
             break;
           }
           
