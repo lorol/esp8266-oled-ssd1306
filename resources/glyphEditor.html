@@ -356,14 +356,18 @@ SOFTWARE.
               } 
             }
             // Remove bytes with value 0 at the end of the array.
+			
+			let cuts = 0;
             while(parseInt(charBytes[charBytes.length-1]) === 0 && charBytes.length !== 1) {
+			  cuts += 1;
               charBytes.pop();
             }
-            
+			var wdt = this.width - parseInt(cuts / this.bytesForHeight);
+		     
             if (notZero) {
               Font.output('data', `  ${charBytes.join(', ')},  // ${charCode}`);
-              // TODO: last param width is not the best value. Need to compute the actual occupied width
-              Font.output('jump', `  ${Font.getMsB(charAddr)}, ${Font.getLsB(charAddr)}, ${Font.toHexString(charBytes.length)}, ${Font.toHexString(this.width)},  // ${charCode} `);
+              // DONE: last param computes the actual occupied width
+              Font.output('jump', `  ${Font.getMsB(charAddr)}, ${Font.getLsB(charAddr)}, ${Font.toHexString(charBytes.length)}, ${Font.toHexString(wdt)},  // ${charCode} `);
               charAddr += charBytes.length;
             } else {
               Font.output('jump', `  0xFF, 0xFF, 0x00, ${Font.toHexString(this.width)},  // ${charCode} `);
