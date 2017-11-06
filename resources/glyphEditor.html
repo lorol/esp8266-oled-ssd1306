@@ -151,7 +151,7 @@ SOFTWARE.
         </tr>
         <tr>
           <td colspan="2"><button id="demo">Demo</button>  <button id="create">Create</button> </td>
-          <td><input type="file" id="fileinput" /> <button id="parse">Parse</button> <div id="nextfont">next font array from line <input placeholder="From line" type="number" id="low" value="0"/></div> <button id="generate">Generate</button> <button id="savetoFile">Save To File</button> </td>
+          <td><input type="file" id="fileinput" /> <button id="parse">Parse</button> <div id="nextfont">next font array from line <input placeholder="From line" type="number" id="low" value="0"/></div> <button id="generate">Generate</button> <input type="checkbox" id="tight">tight <button id="savetoFile">Save To File</button> </td>
         </tr>
       </table>
       <br/>
@@ -362,11 +362,13 @@ SOFTWARE.
 			  cuts += 1;
               charBytes.pop();
             }
+			// Width computing hack 
 			var wdt = this.width - parseInt(cuts / this.bytesForHeight);
+			if (!document.getElementById('tight').checked) wdt += 1;
+			if (wdt > this.width) wdt = this.width;
 		     
             if (notZero) {
               Font.output('data', `  ${charBytes.join(', ')},  // ${charCode}`);
-              // DONE: last param computes the actual occupied width
               Font.output('jump', `  ${Font.getMsB(charAddr)}, ${Font.getLsB(charAddr)}, ${Font.toHexString(charBytes.length)}, ${Font.toHexString(wdt)},  // ${charCode} `);
               charAddr += charBytes.length;
             } else {
