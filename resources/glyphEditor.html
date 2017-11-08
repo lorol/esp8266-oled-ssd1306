@@ -59,7 +59,9 @@ SOFTWARE.
       #chars td.on {
         background-color: #00F;
       }
-      
+      #chars td.out {
+        background-color: #DDD;
+      }
       #addChar, #generate {
         display: none;
       }
@@ -113,11 +115,13 @@ SOFTWARE.
   <li><b>Edit chars</b></li>
     <ul>
      <li>Draw / erase char pixels by mouse click and drag</li>
-     <li>&cross; : Delete this char</li>
-     <li>+ : Add new char above</li>
-     <li>&larr;&darr;&uarr;&rarr; : Move all pixels</li>
-     <li>I : Import all pixels from another char</li>
-     <li>C : Clean all pixels of current char</li>
+     <li>&cross; Delete this char</li>
+     <li>+ Add new char above</li>
+     <li>&larr;&darr;&uarr;&rarr; Move all pixels</li>
+	 <li>( Extend occupied width</li>
+	 <li>) Reduce occupied width</li>
+     <li>I Import all pixels from another char</li>
+     <li>C Clean all pixels of current char</li>
      <li>"Add a character" button : Add new char at the end</li>
     </ul>  
   <li><b>Generate code</b></li>
@@ -151,7 +155,7 @@ SOFTWARE.
         </tr>
         <tr>
           <td colspan="2"><button id="demo">Demo</button>  <button id="create">Create</button> </td>
-          <td><input type="file" id="fileinput" /> <button id="parse">Parse</button> <div id="nextfont">next font array from line <input placeholder="From line" type="number" id="low" value="0"/></div> <button id="generate">Generate</button> <input type="checkbox" id="tight">tight <button id="savetoFile">Save To File</button> </td>
+          <td><input type="file" id="fileinput" /> <button id="parse">Parse</button> <div id="nextfont">next font array from line <input placeholder="From line" type="number" id="low" value="0"/></div> <button id="generate">Generate</button> <button id="savetoFile">Save To File</button> </td>
         </tr>
       </table>
       <br/>
@@ -200,10 +204,12 @@ SOFTWARE.
           let header = charContainer.appendChild(document.createElement("tr"));
           header.innerHTML = '<th  title="Delete this char" action="delete">&cross;</th>'
               + '<th title="Add a char above" action="add">+</th>'
+			  + '<th title="Tight" action="tight">)</th>'
               + '<th title="Shift pixels to the left" action="left">&larr;</th>'
               + '<th title="Shift pixels down" action="down">&darr;</th>'
               + '<th title="Shift pixels up" action="up">&uarr;</th>'
               + '<th title="Shift pixels to the right" action="right">&rarr;</th>'
+              + '<th title="Release" action="release">(</th>'
               + '<th title="Import pixels from another character" action="copy">I</th>'
               + '<th title="Clean all pixels" action="clean">C</th>';
           // If data is provided, decode it to pixel initialization friendly structure
@@ -245,7 +251,8 @@ SOFTWARE.
                 if (pixelInit[c][r]) {
                   pixContainer.className = 'on';
                 }
-              }          		
+              } 
+			  if (jumpData && jumpData.length && c > jumpData[3]) pixContainer.className = 'out';
             }
           }
           this.currentCharCode++;
@@ -330,7 +337,9 @@ SOFTWARE.
             let rows = chars[ch].getElementsByTagName('tr');
             let notZero = false;
             // Browse each column
+			let wdt = this.width;
             for(let col = 0; col < this.width ; col++) {
+			  if (rows[1].children[col].className != 'out') wdt = col + 1;
               let bits = ""; // using string because js uses 32b ints when performing bit operations
               // Browse each row starting from the bottom one, going up, and accumulate pixels in
               // a string: this rotates the glyph
@@ -356,23 +365,16 @@ SOFTWARE.
               } 
             }
             // Remove bytes with value 0 at the end of the array.
-			
-			let cuts = 0;
             while(parseInt(charBytes[charBytes.length-1]) === 0 && charBytes.length !== 1) {
-			  cuts += 1;
               charBytes.pop();
             }
-			// Width computing hack 
-			var wdt = this.width - parseInt(cuts / this.bytesForHeight);
-			if (!document.getElementById('tight').checked) wdt += 1;
-			if (wdt > this.width) wdt = this.width;
 		     
             if (notZero) {
               Font.output('data', `  ${charBytes.join(', ')},  // ${charCode}`);
               Font.output('jump', `  ${Font.getMsB(charAddr)}, ${Font.getLsB(charAddr)}, ${Font.toHexString(charBytes.length)}, ${Font.toHexString(wdt)},  // ${charCode} `);
               charAddr += charBytes.length;
             } else {
-              Font.output('jump', `  0xFF, 0xFF, 0x00, ${Font.toHexString(this.width)},  // ${charCode} `);
+              Font.output('jump', `  0xFF, 0xFF, 0x00, ${Font.toHexString(wdt)},  // ${charCode} `);
             }
           }
           Font.output('data', '};');
@@ -482,7 +484,19 @@ SOFTWARE.
               if((p + 1) % font.width) {
                 pixels[p].className = pixels[p + 1].className;
               } else {
-                pixels[p].className = '';
+				pixels[p].className = 'out';
+              }
+            }
+            break;
+			
+          // tight
+          case 'tight':
+            pixels = currentContainer.getElementsByTagName('td');
+            for(p = 0; p < pixels.length; p++) {
+              if((p + 1) % font.width) {
+                if (pixels[p + 1].className == 'out') pixels[p].className = 'out';
+              } else {
+				pixels[p].className = 'out';
               }
             }
             break;
@@ -498,6 +512,16 @@ SOFTWARE.
               }
             }
             break;
+			
+	       // Release
+          case 'release':
+            pixels = currentContainer.getElementsByTagName('td');
+            for(p = pixels.length-1; p >=0 ; p--) {
+              if(p % font.width) {
+                if ((pixels[p].className == 'out')&&(pixels[p - 1].className != 'out')) pixels[p].className = '';
+				}
+            }
+            break;
 
           // Shift pixels down
           case 'down':
@@ -506,7 +530,8 @@ SOFTWARE.
               if(p >= font.width) {
                 pixels[p].className = pixels[p - font.width].className;
               } else {
-                pixels[p].className = '';
+                if (pixels[p].className == 'out') pixels[p].className = 'out';
+				else pixels[p].className = '';
               }
             }            break;
 
@@ -517,7 +542,8 @@ SOFTWARE.
               if(p < font.width*(font.height -1)) {
                 pixels[p].className = pixels[p + font.width].className;
               } else {
-                pixels[p].className = '';
+                if (pixels[p].className == 'out') pixels[p].className = 'out';
+				else pixels[p].className = '';
               }
             }            
             break;
