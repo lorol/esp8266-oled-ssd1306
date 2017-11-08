@@ -260,7 +260,7 @@ SOFTWARE.
         }
         
         static togglePixel(pixel) {
-          pixel.className = pixel.className === 'on' ? '': 'on';
+          if (pixel.className != 'out') pixel.className = pixel.className === 'on' ? '': 'on';
         }
         
         // Return anInt as hex string
