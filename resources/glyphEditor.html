@@ -118,8 +118,8 @@ SOFTWARE.
      <li>&cross; Delete this char</li>
      <li>+ Add new char above</li>
      <li>&larr;&darr;&uarr;&rarr; Move all pixels</li>
-	 <li>( Extend occupied width</li>
-	 <li>) Reduce occupied width</li>
+     <li>( Extend occupied width</li>
+     <li>) Reduce occupied width</li>
      <li>I Import all pixels from another char</li>
      <li>C Clean all pixels of current char</li>
      <li>"Add a character" button : Add new char at the end</li>
@@ -131,6 +131,7 @@ SOFTWARE.
   <li><b>Save to file</b></li>
     <ul>
      <li>Click "Save To .." button to save generated code of current font to .h file</li>
+     <li>Check "binary" checkbox to save the bytearray to .bin file</li>
     </ul>  
 </ol>   
 <hr>
@@ -155,7 +156,7 @@ SOFTWARE.
         </tr>
         <tr>
           <td colspan="2"><button id="demo">Demo</button>  <button id="create">Create</button> </td>
-          <td><input type="file" id="fileinput" /> <button id="parse">Parse</button> <div id="nextfont">next font array from line <input placeholder="From line" type="number" id="low" value="0"/></div> <button id="generate">Generate</button> <button id="savetoFile">Save To File</button> </td>
+          <td><input type="file" id="fileinput" /> <button id="parse">Parse</button> <div id="nextfont">next font array from line <input placeholder="From line" type="number" id="low" value="0"/></div> <button id="generate">Generate</button> <button id="savetoFile">Save To File</button><input type="checkbox" id="bin"> binary </td>
         </tr>
       </table>
       <br/>
@@ -204,7 +205,7 @@ SOFTWARE.
           let header = charContainer.appendChild(document.createElement("tr"));
           header.innerHTML = '<th  title="Delete this char" action="delete">&cross;</th>'
               + '<th title="Add a char above" action="add">+</th>'
-			  + '<th title="Tight" action="tight">)</th>'
+              + '<th title="Tight" action="tight">)</th>'
               + '<th title="Shift pixels to the left" action="left">&larr;</th>'
               + '<th title="Shift pixels down" action="down">&darr;</th>'
               + '<th title="Shift pixels up" action="up">&uarr;</th>'
@@ -242,17 +243,17 @@ SOFTWARE.
           }
           
           for(let r = 0; r < this.height; r++) {
-          	let rowContainer = charContainer.appendChild(document.createElement("tr"));
+              let rowContainer = charContainer.appendChild(document.createElement("tr"));
             for(let c = 0; c < this.width; c++) {
-          		let pixContainer = rowContainer.appendChild(document.createElement("td"));
+                  let pixContainer = rowContainer.appendChild(document.createElement("td"));
               pixContainer.setAttribute('action', 'toggle');
-          		// If there is some init data, set the pixel accordingly
+                  // If there is some init data, set the pixel accordingly
               if (pixelInit.length && pixelInit[c]) {
                 if (pixelInit[c][r]) {
                   pixContainer.className = 'on';
                 }
               } 
-			  if (jumpData && jumpData.length && c >= jumpData[3]) pixContainer.className = 'out';
+              if (jumpData && jumpData.length && c >= jumpData[3]) pixContainer.className = 'out';
             }
           }
           this.currentCharCode++;
@@ -291,13 +292,33 @@ SOFTWARE.
           document.getElementById('jump').textContent = '';
           document.getElementById('data').textContent = '';
         }
-		
+
         saveFile() {
-          let filename = document.getElementById('name').value.replace(/[^a-zA-Z0-9_$]/g, '_') + ".h";
+          let filename = document.getElementById('name').value.replace(/[^a-zA-Z0-9_$]/g, '_');
           let data = document.getElementById("output").innerText;
           if(data.length < 10) return;
-          let blobObject = new Blob([data], {type:'text/plain'}); 
-    
+
+          if (document.getElementById('bin').checked) {
+             // clean comments
+             data = data.replace(/\/\*[\s\S]*?\*\/|([^\\:]|^)\/\/.*$/gm, '$1');
+             // clean spaces and new lines
+             data = data.replace(/\s+/g, '').trim();
+             // take the array
+             data = data.split('{').pop().split('}').shift();
+             // remove the last comma
+             if (data.slice(-1) == ",") data = data.slice(0,-1);
+             data = data.split(',');
+             for (let a in data ) {
+              data[a] = parseInt(data[a], 16);
+             }
+             data = new Uint8Array(data);
+             filename += ".V3.bin";  
+          } else {
+              filename += ".V3.h";
+          }
+          
+          let blobObject = new Blob([data], {type:'text/plain'});
+ 
           if(window.navigator.msSaveBlob) {
             window.navigator.msSaveBlob(blobObject, filename);
           } else {
@@ -313,7 +334,7 @@ SOFTWARE.
             }
           }  
         }
-			
+            
         // Read from the <td> css class the pixels that need to be on
         // generates the jump table and font data 
         generate() {
@@ -337,9 +358,9 @@ SOFTWARE.
             let rows = chars[ch].getElementsByTagName('tr');
             let notZero = false;
             // Browse each column
-			let wdt = this.width;
+            let wdt = this.width;
             for(let col = 0; col < this.width ; col++) {
-			  if (rows[1].children[col].className != 'out') wdt = col + 1;
+              if (rows[1].children[col].className != 'out') wdt = col + 1;
               let bits = ""; // using string because js uses 32b ints when performing bit operations
               // Browse each row starting from the bottom one, going up, and accumulate pixels in
               // a string: this rotates the glyph
@@ -368,7 +389,7 @@ SOFTWARE.
             while(parseInt(charBytes[charBytes.length-1]) === 0 && charBytes.length !== 1) {
               charBytes.pop();
             }
-		     
+             
             if (notZero) {
               Font.output('data', `  ${charBytes.join(', ')},  // ${charCode}`);
               Font.output('jump', `  ${Font.getMsB(charAddr)}, ${Font.getLsB(charAddr)}, ${Font.toHexString(charBytes.length)}, ${Font.toHexString(wdt)},  // ${charCode} `);
@@ -388,7 +409,7 @@ SOFTWARE.
           Font.output('header', `  ${Font.toHexString(charCount)}, // Number of chars: ${charCount}`);
         }
       }
-	  
+      
       document.getElementById('fileinput').addEventListener('change', function(e) {
         let f = e.target.files[0]; 
         if (f) {
@@ -402,8 +423,8 @@ SOFTWARE.
                 +"starts with: " + contents.substr(0, contents.indexOf("\n")) 
             ); 
             document.getElementById("inputText").value = contents;
-		    document.getElementById('low').value = 0;
-			document.getElementById('nextfont').style.display = 'none';
+            document.getElementById('low').value = 0;
+            document.getElementById('nextfont').style.display = 'none';
           };
           r.readAsText(f);
         } else { 
@@ -484,11 +505,11 @@ SOFTWARE.
               if((p + 1) % font.width) {
                 pixels[p].className = pixels[p + 1].className;
               } else {
-				pixels[p].className = 'out';
+                pixels[p].className = 'out';
               }
             }
             break;
-			
+            
           // tight
           case 'tight':
             pixels = currentContainer.getElementsByTagName('td');
@@ -496,7 +517,7 @@ SOFTWARE.
               if((p + 1) % font.width) {
                 if (pixels[p + 1].className == 'out') pixels[p].className = 'out';
               } else {
-				pixels[p].className = 'out';
+                pixels[p].className = 'out';
               }
             }
             break;
@@ -512,14 +533,14 @@ SOFTWARE.
               }
             }
             break;
-			
-	       // Release
+            
+           // Release
           case 'release':
             pixels = currentContainer.getElementsByTagName('td');
             for(p = pixels.length-1; p >=0 ; p--) {
               if(p % font.width) {
                 if ((pixels[p].className == 'out')&&(pixels[p - 1].className != 'out')) pixels[p].className = '';
-				}
+                }
             }
             break;
 
@@ -531,7 +552,7 @@ SOFTWARE.
                 pixels[p].className = pixels[p - font.width].className;
               } else {
                 if (pixels[p].className == 'out') pixels[p].className = 'out';
-				else pixels[p].className = '';
+                else pixels[p].className = '';
               }
             }            break;
 
@@ -543,7 +564,7 @@ SOFTWARE.
                 pixels[p].className = pixels[p + font.width].className;
               } else {
                 if (pixels[p].className == 'out') pixels[p].className = 'out';
-				else pixels[p].className = '';
+                else pixels[p].className = '';
               }
             }            
             break;
@@ -618,7 +639,7 @@ SOFTWARE.
           let line = lines[l].trim();
           //alert(line);
           let fields;
-		  
+          
           // Declaration line: grab the name
           if (line.indexOf('PROGMEM') > 0) {
             fields = line.split(' ');
@@ -648,8 +669,8 @@ SOFTWARE.
           // End of array declaration
           // TODO warn if more lines: next fonts are ignored
           if ((line.indexOf('};') === 0) || (line.indexOf('};') > 0)) {
-		    document.getElementById('low').value = l + 1;
-			document.getElementById('nextfont').style.display = 'inline-block';
+            document.getElementById('low').value = l + 1;
+            document.getElementById('nextfont').style.display = 'inline-block';
             break;
           }
           
@@ -695,15 +716,15 @@ SOFTWARE.
         document.getElementById('height').value = parseInt(height);
         document.getElementById('width').value = parseInt(width);
         document.getElementById('code').value = parseInt(firstCharCode);
-      	font = new Font();
-      	for(let c = 0 ; c < jumpTable.length; c++) {
-      	  let jumpEntry = jumpTable[c];
-      	  let charEntry = [];
-      	  // displayable character 
-      	  if (jumpEntry[0] !== 255 || jumpEntry[1] !== 255) {
-      	    charEntry = charData.splice(0, jumpEntry[2]);
+          font = new Font();
+          for(let c = 0 ; c < jumpTable.length; c++) {
+            let jumpEntry = jumpTable[c];
+            let charEntry = [];
+            // displayable character 
+            if (jumpEntry[0] !== 255 || jumpEntry[1] !== 255) {
+              charEntry = charData.splice(0, jumpEntry[2]);
           }
-      	  font.addChar(jumpEntry, charEntry);
+            font.addChar(jumpEntry, charEntry);
         }
         document.body.className = "started";
       });        
