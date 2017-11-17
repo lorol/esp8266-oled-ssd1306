@@ -1,9 +1,10 @@
 <!DOCTYPE html>
 <html>
-  <head>
-    <meta charset="utf-8" />
-    <title>Glyph Editor</title>
-<!--The MIT License (MIT)
+
+<head>
+  <meta charset="utf-8" />
+  <title>Glyph Editor</title>
+  <!--The MIT License (MIT)
 
 Copyright (c) 2017 by Xavier Grosjean
 
@@ -30,171 +31,195 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
 -->
-<!--
+  <!--
  Standalone page to draw icons in matrix and generates the map definition with the format required by 
  library for OLED SD1306 screen: https://github.com/squix78/esp8266-oled-ssd1306
  100% quick and dirty vanilla ECS6, no framework or library was injured for this project.
 
 -->
-    <style>
-      #form, #chars table {
-        user-select: none; 
-        -moz-user-select: none; 
-        margin-top: 5px;
-      }
-      #chars table, tr, td, th {
-        border-collapse: collapse;
-      }
-      #chars td, th {
-        border: 1px solid #CCC;
-        width: 12px;
-        height: 15px;
-      }
-      #chars th[action] {
-        cursor:pointer;
-      }
-      #chars th[action="up"], #chars th[action="down"], #chars th[action="left"], #chars th[action="right"] {
-        font-size: 10px;
-      }
-      #chars td.on {
-        background-color: #00F;
-      }
-      #chars td.out {
-        background-color: #DDD;
-      }
-      #addChar, #generate {
-        display: none;
-      }
-      body.started #addChar, body.started #generate {
-        display: inline;
-      }
-      body.started #create {
-        display: none;
-      }
-      #page {
-        position:relative;
-      }
-      #page>div {
-        position: relative;
-        float: left;
-      }
+  <style>
+    #form,
+    #chars table {
+      user-select: none;
+      -moz-user-select: none;
+      margin-top: 5px;
+    }
+    #chars table,
+    tr,
+    td,
+    th {
+      border-collapse: collapse;
+    }
+    #chars td,
+    th {
+      border: 1px solid #CCC;
+      width: 12px;
+      height: 15px;
+    }
+    #chars th[action] {
+      cursor: pointer;
+    }
+    #chars th[action="up"],
+    #chars th[action="down"],
+    #chars th[action="left"],
+    #chars th[action="right"] {
+      font-size: 10px;
+    }
+    #chars td.on {
+      background-color: #00F;
+    }
+    #chars td.out {
+      background-color: #DDD;
+    }
+    #addChar,
+    #generate {
+      display: none;
+    }
+    body.started #addChar,
+    body.started #generate {
+      display: inline;
+    }
+    body.started #create {
+      display: none;
+    }
+    #page {
+      position: relative;
+    }
+    #page>div {
+      position: relative;
+      float: left;
+    }
+    #output {
+      margin-left: 20px;
+      margin-top: 12px;
+      font-size: 12px;
+      user-select: all;
+      -moz-user-select: all;
+      max-width: 60%;
+    }
+    #header {
+      margin-top: 10px;
+    }
+    #inputText {
+      width: 100%;
+      height: 120px;
+    }
+    #nextfont {
+      display: none;
+    }
+  </style>
+</head>
 
-      #output {
-        margin-left: 20px;
-        margin-top: 12px;
-        font-size:12px;
-        user-select: all;
-        -moz-user-select: all;
-        max-width:60%;
-      }
-      
-      #header {
-        margin-top: 10px;
-      }
-      #inputText {
-        width: 100%;
-        height:120px;
-      }
-      #nextfont {
-       display: none;
-      }
-      
-    </style>
-  </head>
-  <body>
-   <center><h4>Glyph Font Editor, compatible with<br><a href="https://github.com/squix78/esp8266-oled-ssd1306">Squix78' OLED SD1306 screen library</a></h4></center>
-<ol>
-  <li><b>Startup alternatives</b></li>
+<body>
+  <center>
+    <h4>Glyph Font Editor, compatible with<br><a href="https://github.com/squix78/esp8266-oled-ssd1306">Squix78' OLED SD1306 screen library V3 format</a></h4>
+  </center>
+  <ol>
+    <li><b>Startup alternatives</b></li>
     <ul>
-     <li>Use provided example code: Click "Demo", then "Parse" button</li>
-     <li>Create own font from scratch: Specify font parameters and click "Create" button</li>
-     <li>Load a font from extranal .h file: use "Browse" button</li>
-     <li>If you modify the code in text area, use "Parse" button to apply changes</li>
-     <li>If code contains more fonts, parse the next from auto-detected code line on</li>
+      <li>Use provided example code: Click "Demo", then "Parse" button</li>
+      <li>Create own font from scratch: Specify font parameters and click "Create" button</li>
+      <li>Load a font from an extranal file (.c .h): click "Browse" button</li>
+	  <li>Use "binary input" checkbox to load a binary file</li>
+      <li>If you modify the code in text area, use "Parse" button to apply changes</li>
+      <li>If code contains more fonts, the next can be parsed too, except on binary input</li>
     </ul>
-  <li><b>Edit chars</b></li>
+    <li><b>Edit chars</b></li>
     <ul>
-     <li>Draw / erase char pixels by mouse click and drag</li>
-     <li>&cross; Delete this char</li>
-     <li>+ Add new char above</li>
-     <li>&larr;&darr;&uarr;&rarr; Move all pixels</li>
-     <li>( Extend occupied width</li>
-     <li>) Reduce occupied width</li>
-     <li>I Import all pixels from another char</li>
-     <li>C Clean all pixels of current char</li>
-     <li>"Add a character" button : Add new char at the end</li>
-    </ul>  
-  <li><b>Generate code</b></li>
+      <li>Draw / erase char pixels by mouse click and drag</li>
+      <li>&cross; Delete this char</li>
+      <li>+ Add new char above</li>
+      <li>&larr;&darr;&uarr;&rarr; Move all pixels</li>
+      <li>( Extend occupied width</li>
+      <li>) Reduce occupied width</li>
+      <li>I Import all pixels from another char</li>
+      <li>C Clean all pixels of current char</li>
+      <li>"Add a character" button : Add new char at the end</li>
+    </ul>
+    <li><b>Generate code</b></li>
     <ul>
-     <li>Click "Generate" button to preview code</li>
-    </ul>  
-  <li><b>Save to file</b></li>
+      <li>Click "Generate" button to preview code</li>
+    </ul>
+    <li><b>Save to file</b></li>
     <ul>
-     <li>Click "Save To .." button to save generated code of current font to .h file</li>
-     <li>Check "binary" checkbox to save the bytearray to .bin file</li>
-    </ul>  
-</ol>   
-<hr>
-    <div id="form">
-      <table width="100%">
-        <tr>
-          <td>Font array name:</td><td><input placeholder="Font array name" type="text" id="name" /></td>
-          <td width="75%" rowspan="5">
-            <textarea id="inputText" placeholder="Or paste a char array font definition here"></textarea></td>
-        </tr>
-        <tr>
-          <td>First char code:</td><td><input placeholder="First char code" type="number" id="code"  min="1"/></td>
-        </tr>
-        <tr>
-          <td>Width:</td><td><input placeholder="Font width" type="number" id="width" /></td>
-        </tr>
-        <tr>
-          <td>Height:</td><td><input placeholder="Font height" type="number" id="height" max="64"/></td>
-        </tr>
-        <tr>
-          <td colspan="3"> </td>     <!--slightly improves layout-->
-        </tr>
-        <tr>
-          <td colspan="2"><button id="demo">Demo</button>  <button id="create">Create</button> </td>
-          <td><input type="file" id="fileinput" /> <button id="parse">Parse</button> <div id="nextfont">next font array from line <input placeholder="From line" type="number" id="low" value="0"/></div> <button id="generate">Generate</button> <button id="savetoFile">Save To File</button><input type="checkbox" id="bin"> binary </td>
-        </tr>
-      </table>
-      <br/>
+      <li>Click "Save To .." button to save generated code of current font to .h file</li>
+      <li>Check "binary" checkbox to save the bytearray to .bin file</li>
+    </ul>
+  </ol>
+  <hr>
+  <div id="form">
+    <table width="100%">
+      <tr>
+        <td>Font array name:</td>
+        <td><input placeholder="Font array name" type="text" id="name" /></td>
+        <td width="75%" rowspan="5">
+          <textarea id="inputText" placeholder="Or paste a char array font definition here"></textarea></td>
+      </tr>
+      <tr>
+        <td>First char code:</td>
+        <td><input placeholder="First char code" type="number" id="code" min="1" /></td>
+      </tr>
+      <tr>
+        <td>Width:</td>
+        <td><input placeholder="Font width" type="number" id="width" /></td>
+      </tr>
+      <tr>
+        <td>Height:</td>
+        <td><input placeholder="Font height" type="number" id="height" max="64" /></td>
+      </tr>
+      <tr>
+        <td colspan="3"> </td>
+        <!--slightly improves layout-->
+      </tr>
+      <tr>
+        <td colspan="2"><input type="button" id="demo" value="Demo"></button> <input type="button" id="create" value="Create"></button> </td>
+        <td>binary input <input type="checkbox" id="bin2"><input type="file" id="fileinput" /> <input type="button" id="parse" value="Parse"></button>
+          <div id="nextfont">next<input placeholder="idx" type="number" id="low" value="0"/></div> <input type="button" id="generate" value="Generate"></button> <input type="button" id="savetoFile" value="Save To File"></button><input type="checkbox" id="bin"> binary output</td>
+      </tr>
+    </table>
+    <br/>
+  </div>
+  <div id="page">
+    <div id="charxContainer" ondragstart="return false;">
+      <div id="chars"></div><br/>
+      <input type="button" id="addChar" value="Add a character"></button>
     </div>
-    <div id="page">
-      <div id="charxContainer" ondragstart="return false;">
-        <div id="chars"></div><br/>
-        <button id="addChar">Add a character</button>
-      </div>
-      <div id="output">
-        <div class="output" id="header"> </div>
-        <div class="output" id="jump"> </div>
-        <div class="output" id="data"> </div>
-      </div>
+    <div id="output">
+      <div class="output" id="header"> </div>
+      <div class="output" id="jump"> </div>
+      <div class="output" id="data"> </div>
     </div>
-    <script>
+  </div>
+  <script>
     (function() {
       let font;
-      
+
       class Font {
         constructor() {
           this.height = parseInt(document.getElementById('height').value);
           this.width = parseInt(document.getElementById('width').value);
           this.currentCharCode = parseInt(document.getElementById('code').value);
           this.fontContainer = document.getElementById('chars');
-          this.bytesForHeight = (1 + ((this.height - 1) >> 3));  // number of bytes needed for this font height
+          this.bytesForHeight = (1 + ((this.height - 1) >> 3)); // number of bytes needed for this font height
           document.body.className = "started";
           document.getElementById('height').disabled = true;
-          document.getElementById('width').disabled = true;  
+          document.getElementById('width').disabled = true;
         }
-        
+
         // Should we have a Char and a Pixel class ? not sure it's worth it.
         // Let's use the DOM to store everything for now
-        
+
         static updateCaption(element, code) {
           element.textContent = `Char #${code}`;
         }
-        
+
+        static prs(pcx) {
+		  if (pcx === undefined) return NaN;
+          if ((pcx.slice(0, 1) === 'B') || (pcx.slice(0, 1) === 'b')) {
+            return parseInt(pcx.slice(1, 9), 2); // B01010111
+          } else return parseInt(pcx); // auto 0xF1 or 125 
+        }
+
         // Add a pixel matrix to draw a new character
         // jumpaData not used for now: some day, use the last byte for optimisation 
         addChar(jumpData, charData) {
@@ -203,25 +228,25 @@ SOFTWARE.
           let caption = charContainer.appendChild(document.createElement("caption"));
           Font.updateCaption(caption, this.currentCharCode);
           let header = charContainer.appendChild(document.createElement("tr"));
-          header.innerHTML = '<th  title="Delete this char" action="delete">&cross;</th>'
-              + '<th title="Add a char above" action="add">+</th>'
-              + '<th title="Tight" action="tight">)</th>'
-              + '<th title="Shift pixels to the left" action="left">&larr;</th>'
-              + '<th title="Shift pixels down" action="down">&darr;</th>'
-              + '<th title="Shift pixels up" action="up">&uarr;</th>'
-              + '<th title="Shift pixels to the right" action="right">&rarr;</th>'
-              + '<th title="Release" action="release">(</th>'
-              + '<th title="Import pixels from another character" action="copy">I</th>'
-              + '<th title="Clean all pixels" action="clean">C</th>';
+          header.innerHTML = '<th  title="Delete this char" action="delete">&cross;</th>' +
+            '<th title="Add a char above" action="add">+</th>' +
+            '<th title="Tight" action="tight">)</th>' +
+            '<th title="Shift pixels to the left" action="left">&larr;</th>' +
+            '<th title="Shift pixels down" action="down">&darr;</th>' +
+            '<th title="Shift pixels up" action="up">&uarr;</th>' +
+            '<th title="Shift pixels to the right" action="right">&rarr;</th>' +
+            '<th title="Release" action="release">(</th>' +
+            '<th title="Import pixels from another character" action="copy">I</th>' +
+            '<th title="Clean all pixels" action="clean">C</th>';
           // If data is provided, decode it to pixel initialization friendly structure
           let pixelInit = [];
           if (charData && charData.length) {
             // charData byte count needs to be a multiple of bytesForHeight. End bytes with value 0 may have been trimmed
             let missingBytes = charData.length % this.bytesForHeight;
-            for(let b = 0; b < missingBytes ; b++) {
+            for (let b = 0; b < missingBytes; b++) {
               charData.push(0);
             }
-            while(charData.length) {
+            while (charData.length) {
               let row = charData.splice(0, this.bytesForHeight).reverse();
               let pixelRow = [];
               for (let b = 0; b < row.length; b++) {
@@ -241,44 +266,44 @@ SOFTWARE.
               pixelInit.push(pixelRow.reverse());
             }
           }
-          
-          for(let r = 0; r < this.height; r++) {
-              let rowContainer = charContainer.appendChild(document.createElement("tr"));
-            for(let c = 0; c < this.width; c++) {
-                  let pixContainer = rowContainer.appendChild(document.createElement("td"));
+
+          for (let r = 0; r < this.height; r++) {
+            let rowContainer = charContainer.appendChild(document.createElement("tr"));
+            for (let c = 0; c < this.width; c++) {
+              let pixContainer = rowContainer.appendChild(document.createElement("td"));
               pixContainer.setAttribute('action', 'toggle');
-                  // If there is some init data, set the pixel accordingly
+              // If there is some init data, set the pixel accordingly
               if (pixelInit.length && pixelInit[c]) {
                 if (pixelInit[c][r]) {
                   pixContainer.className = 'on';
                 }
-              } 
+              }
               if (jumpData && jumpData.length && c >= jumpData[3]) pixContainer.className = 'out';
             }
           }
           this.currentCharCode++;
           return charContainer;
         }
-        
+
         static togglePixel(pixel) {
-          if (pixel.className != 'out') pixel.className = pixel.className === 'on' ? '': 'on';
+          if (pixel.className != 'out') pixel.className = pixel.className === 'on' ? '' : 'on';
         }
-        
+
         // Return anInt as hex string
         static toHexString(aByte) {
-          let zero = aByte < 16?'0':'';
+          let zero = aByte < 16 ? '0' : '';
           return `0x${zero}${aByte.toString(16).toUpperCase()}`
         }
-        
+
         // Return least significant byte as hex string
         static getLsB(anInt) {
-          return Font.toHexString(anInt & 0xFF);      
+          return Font.toHexString(anInt & 0xFF);
         }
         // Return most significant byte as hex string
         static getMsB(anInt) {
-          return Font.toHexString(anInt>>>8);      
+          return Font.toHexString(anInt >>> 8);
         }
-       
+
         static output(targetId, msg) {
           let output = document.getElementById(targetId);
           let line = output.appendChild(document.createElement('div'));
@@ -296,30 +321,32 @@ SOFTWARE.
         saveFile() {
           let filename = document.getElementById('name').value.replace(/[^a-zA-Z0-9_$]/g, '_');
           let data = document.getElementById("output").innerText;
-          if(data.length < 10) return;
+          if (data.length < 10) return;
 
           if (document.getElementById('bin').checked) {
-             // clean comments
-             data = data.replace(/\/\*[\s\S]*?\*\/|([^\\:]|^)\/\/.*$/gm, '$1');
-             // clean spaces and new lines
-             data = data.replace(/\s+/g, '').trim();
-             // take the array
-             data = data.split('{').pop().split('}').shift();
-             // remove the last comma
-             if (data.slice(-1) == ",") data = data.slice(0,-1);
-             data = data.split(',');
-             for (let a in data ) {
+            // clean comments
+            data = data.replace(/\/\*[\s\S]*?\*\/|([^\\:]|^)\/\/.*$/gm, '$1');
+            // clean spaces and new lines
+            data = data.replace(/\s+/g, '').trim();
+            // take the array
+            data = data.split('{').pop().split('}').shift();
+            // remove the last comma
+            if (data.slice(-1) == ",") data = data.slice(0, -1);
+            data = data.split(',');
+            for (let a in data) {
               data[a] = parseInt(data[a], 16);
-             }
-             data = new Uint8Array(data);
-             filename += ".V3.bin";  
+            }
+            data = new Uint8Array(data);
+            filename += ".V3.bin";
           } else {
-              filename += ".V3.h";
+            filename += ".V3.h";
           }
-          
-          let blobObject = new Blob([data], {type:'text/plain'});
- 
-          if(window.navigator.msSaveBlob) {
+
+          let blobObject = new Blob([data], {
+            type: 'text/plain'
+          });
+
+          if (window.navigator.msSaveBlob) {
             window.navigator.msSaveBlob(blobObject, filename);
           } else {
             let a = document.createElement("a");
@@ -332,9 +359,9 @@ SOFTWARE.
             } else {
               a.click();
             }
-          }  
+          }
         }
-            
+
         // Read from the <td> css class the pixels that need to be on
         // generates the jump table and font data 
         generate() {
@@ -342,15 +369,15 @@ SOFTWARE.
           let chars = this.fontContainer.getElementsByTagName('table');
           let firstCharCode = parseInt(document.getElementById('code').value);
           let name = document.getElementById('name').value.replace(/[^a-zA-Z0-9_$]/g, '_');
-          
-          let bits2add = this.bytesForHeight*8 - this.height;  // number of missing bits to fill leftmost byte
+
+          let bits2add = this.bytesForHeight * 8 - this.height; // number of missing bits to fill leftmost byte
           let charCount = chars.length;
           let charAddr = 0;
           // Comments are used when parsing back a generated font
           Font.output('jump', '  // Jump Table:');
           Font.output('data', '  // Font Data:');
           // Browse each character
-          for(let ch = 0; ch < charCount; ch++) {
+          for (let ch = 0; ch < charCount; ch++) {
             // Fix renumbering in case first char code was modified  
             Font.updateCaption(chars[ch].getElementsByTagName('caption')[0], ch + firstCharCode);
             let charBytes = [];
@@ -359,37 +386,37 @@ SOFTWARE.
             let notZero = false;
             // Browse each column
             let wdt = this.width;
-            for(let col = 0; col < this.width ; col++) {
+            for (let col = 0; col < this.width; col++) {
               if (rows[1].children[col].className != 'out') wdt = col + 1;
               let bits = ""; // using string because js uses 32b ints when performing bit operations
               // Browse each row starting from the bottom one, going up, and accumulate pixels in
               // a string: this rotates the glyph
               // Beware, row 0 is table headers.
-              for(let r = rows.length-1; r >=1 ; r--) {
+              for (let r = rows.length - 1; r >= 1; r--) {
                 let pixelState = rows[r].children[col].className;
-                bits += (pixelState === 'on' ? '1': '0');           
+                bits += (pixelState === 'on' ? '1' : '0');
               }
               // Need to complete missing bits to have a sizeof byte multiple number of bits
-              for(let b = 0; b < bits2add; b++) {
-                bits =  '0' + bits;
+              for (let b = 0; b < bits2add; b++) {
+                bits = '0' + bits;
               }
               // Font.output('data', `  // ${bits}`);  // Debugging help: rotated bitmap
 
               // read bytes from the end
-              for(let b = bits.length - 1; b >= 7; b -= 8) {
+              for (let b = bits.length - 1; b >= 7; b -= 8) {
                 //Font.output('data', `  // ${bits.substr(b-7, 8)}`);  // Debugging help: rotated bitmap
-                let byte = parseInt(bits.substr(b-7, 8), 2);
+                let byte = parseInt(bits.substr(b - 7, 8), 2);
                 if (byte !== 0) {
                   notZero = true;
                 }
                 charBytes.push(Font.toHexString(byte));
-              } 
+              }
             }
             // Remove bytes with value 0 at the end of the array.
-            while(parseInt(charBytes[charBytes.length-1]) === 0 && charBytes.length !== 1) {
+            while (parseInt(charBytes[charBytes.length - 1]) === 0 && charBytes.length !== 1) {
               charBytes.pop();
             }
-             
+
             if (notZero) {
               Font.output('data', `  ${charBytes.join(', ')},  // ${charCode}`);
               Font.output('jump', `  ${Font.getMsB(charAddr)}, ${Font.getLsB(charAddr)}, ${Font.toHexString(charBytes.length)}, ${Font.toHexString(wdt)},  // ${charCode} `);
@@ -399,43 +426,97 @@ SOFTWARE.
             }
           }
           Font.output('data', '};');
-          
+
           Font.output('header', "// Font generated or edited with the glyphEditor");
           Font.output('header', `const char ${name}[] PROGMEM = {`);
           // Comments are used when parsing back a generated font
           Font.output('header', `  ${Font.toHexString(this.width)}, // Width: ${this.width}`);
-          Font.output('header', `  ${Font.toHexString(this.height)}, // Height: ${this.height}`);          
+          Font.output('header', `  ${Font.toHexString(this.height)}, // Height: ${this.height}`);
           Font.output('header', `  ${Font.toHexString(firstCharCode)}, // First char: ${firstCharCode}`);
           Font.output('header', `  ${Font.toHexString(charCount)}, // Number of chars: ${charCount}`);
         }
       }
-      
+      // Load from text file or process from binary
       document.getElementById('fileinput').addEventListener('change', function(e) {
-        let f = e.target.files[0]; 
+        let f = e.target.files[0];
         if (f) {
           let r = new FileReader();
-          r.onload = function(e) { 
+          r.onload = function(e) {
             let contents = e.target.result;
-                alert( "Got the file.\n" 
-                +"name: " + f.name + "\n"
-                +"type: " + f.type + "\n"
-                +"size: " + f.size + " bytes\n"
-                +"starts with: " + contents.substr(0, contents.indexOf("\n")) 
-            ); 
-            document.getElementById("inputText").value = contents;
+            alert("Got the file.\n" +
+              "name: " + f.name + "\n" +
+			  "size: " + f.size + " bytes\n" +
+              "type: " + f.type
+            );
+            if (document.getElementById('chars').childElementCount) {
+              let result = confirm("Confirm you want to overwrite the existing grids ?");
+              if (!result) return;
+            }
             document.getElementById('low').value = 0;
             document.getElementById('nextfont').style.display = 'none';
+            document.getElementById('parse').value = "Parse";
+        
+            if (document.getElementById('bin2').checked) {
+              document.getElementById('parse').disabled = true;
+              document.getElementById("inputText").value = "";
+              let name = f.name.split(".")[0];
+			  //let name = f.name.substr(0, f.name.lastIndexOf("."));
+              let data = new Uint8Array(contents);
+              let width = data[0];
+              let height = data[1];
+              let firstCharCode = data[2];
+              let numberOfChars = data[3];
+              let jumpTable = [];
+              let charData = [];
+              let jc = 4; // fist jump byte
+              let dc = 4 + 4 * numberOfChars; // first contents byte
+              for (let c = 0; c < numberOfChars; c++) {
+                let newEntry = [];
+                for (let j = 0; j < 4; j++) { // create jump entry elements
+                  newEntry.push(data[jc]);
+                  jc++;
+                }
+                jumpTable.push(newEntry);
+                if (newEntry[0] !== 255 || newEntry[1] !== 255) {
+                  for (let i = 0; i < newEntry[2]; i++) { // create contents entry elements	    
+                    charData.push(data[dc]);
+                    dc++;
+                  }
+                }
+              }
+              Font.emptyChars();
+              Font.emptyOutput();
+              document.getElementById('name').value = name;
+              document.getElementById('height').value = parseInt(height);
+              document.getElementById('width').value = parseInt(width);
+              document.getElementById('code').value = parseInt(firstCharCode);
+              font = new Font();
+              for (let c = 0; c < jumpTable.length; c++) {
+                let jumpEntry = jumpTable[c];
+                let charEntry = [];
+                // displayable character 
+                if (jumpEntry[0] !== 255 || jumpEntry[1] !== 255) {
+                  charEntry = charData.splice(0, jumpEntry[2]);
+                }
+                font.addChar(jumpEntry, charEntry);
+              }
+              document.body.className = "started";
+            } else {
+              document.getElementById('parse').disabled = false;
+              document.getElementById("inputText").value = contents;
+            }
           };
-          r.readAsText(f);
-        } else { 
-          alert("Failed to load file");
+          if (document.getElementById('bin2').checked) r.readAsArrayBuffer(f);
+          else r.readAsText(f);
+        } else {
+            alert("Failed to load file");
         }
-        });
-      
+      });
+
       document.getElementById('savetoFile').addEventListener('click', function() {
         font.saveFile();
       });
-      
+
       document.getElementById('generate').addEventListener('click', function() {
         font.generate();
       });
@@ -443,27 +524,28 @@ SOFTWARE.
       document.getElementById('addChar').addEventListener('click', function() {
         font.addChar();
       });
-  
+
       document.getElementById('inputText').addEventListener('dblclick', function(e) {
-       let target = e.target;
-       target.select();
+        let target = e.target;
+        target.select();
       });
-      
+
       document.getElementById('demo').addEventListener('click', function(e) {
+	    document.getElementById('parse').disabled = false;
         document.getElementById('low').value = 0;
         document.getElementById('nextfont').style.display = 'none';
-        document.getElementById('inputText').value = 'const char My_Font[] PROGMEM = {\n'
-            + '0x0A, // Width: 10\n'
-            + '0x0D, // Height: 13\n'
-            + '0x01, // First char: 1\n'
-            + '0x02, // Number of chars: 2\n'
-            + '// Jump Table:\n'
-            + '0x00, 0x00, 0x13, 0x0A, // 1\n'
-            + '0x00, 0x13, 0x14, 0x0A, // 2\n'
-            + '// Font Data:\n'
-            + '0xF0, 0x03, 0x10, 0x02, 0xF0, 0x03, 0x10, 0x02, 0xF0, 0x03, 0x10, 0x02, 0xF0, 0x03, 0x10, 0x02, 0xF0, 0x03, 0xC0, // 1\n'
-            + '0x00, 0x0C, 0x80, 0x0B, 0x70, 0x08, 0x0C, 0x08, 0xF3, 0x0A, 0xF3, 0x0A, 0x0C, 0x08, 0x70, 0x08, 0x80, 0x0B, 0x00, 0x0C, // 2\n'
-            + '};' 
+        document.getElementById('inputText').value = 'const char My_Font[] PROGMEM = {\n' +
+          '0x0A, // Width: 10\n' +
+          '0x0D, // Height: 13\n' +
+          '0x01, // First char: 1\n' +
+          '0x02, // Number of chars: 2\n' +
+          '// Jump Table:\n' +
+          '0x00, 0x00, 0x13, 0x0A, // 1\n' +
+          '0x00, 0x13, 0x14, 0x0A, // 2\n' +
+          '// Font Data:\n' +
+          '0xF0, 0x03, 0x10, 0x02, 0xF0, 0x03, 0x10, 0x02, 0xF0, 0x03, 0x10, 0x02, 0xF0, 0x03, 0x10, 0x02, 0xF0, 0x03, 0xC0, // 1\n' +
+          '0x00, 0x0C, 0x80, 0x0B, 0x70, 0x08, 0x0C, 0x08, 0xF3, 0x0A, 0xF3, 0x0A, 0x0C, 0x08, 0x70, 0x08, 0x80, 0x0B, 0x00, 0x0C, // 2\n' +
+          '};'
       });
 
       document.getElementById('chars').addEventListener('mousedown', function(e) {
@@ -471,9 +553,9 @@ SOFTWARE.
         let target = e.target;
         let action = target.getAttribute('action') || '';
         if (action === '') return;
-        let result, code, nextContainer, previousContainer, pixels ;
+        let result, code, nextContainer, previousContainer, pixels;
         let currentContainer = target.parentNode.parentNode;
-        switch(action) {
+        switch (action) {
           case 'add':
             code = currentContainer.getAttribute('code');
             nextContainer = font.addChar();
@@ -481,7 +563,7 @@ SOFTWARE.
             do {
               nextContainer.setAttribute('code', code);
               Font.updateCaption(nextContainer.getElementsByTagName('caption')[0], code);
-              code ++;
+              code++;
             } while (nextContainer = nextContainer.nextSibling);
             break;
 
@@ -493,80 +575,81 @@ SOFTWARE.
             while (nextContainer = nextContainer.nextSibling) {
               nextContainer.setAttribute('code', code);
               Font.updateCaption(nextContainer.getElementsByTagName('caption')[0], code);
-              code ++;
+              code++;
             }
             currentContainer.parentNode.removeChild(currentContainer);
             break;
 
-          // Shift pixels to the left  
+            // Shift pixels to the left  
           case 'left':
             pixels = currentContainer.getElementsByTagName('td');
-            for(p = 0; p < pixels.length; p++) {
-              if((p + 1) % font.width) {
+            for (p = 0; p < pixels.length; p++) {
+              if ((p + 1) % font.width) {
                 pixels[p].className = pixels[p + 1].className;
               } else {
                 pixels[p].className = 'out';
               }
             }
             break;
-            
-          // tight
+
+            // tight
           case 'tight':
             pixels = currentContainer.getElementsByTagName('td');
-            for(p = 0; p < pixels.length; p++) {
-              if((p + 1) % font.width) {
+            for (p = 0; p < pixels.length; p++) {
+              if ((p + 1) % font.width) {
                 if (pixels[p + 1].className == 'out') pixels[p].className = 'out';
               } else {
                 pixels[p].className = 'out';
               }
             }
             break;
-          
-          // Shift pixels to the right
+
+            // Shift pixels to the right
           case 'right':
             pixels = currentContainer.getElementsByTagName('td');
-            for(p = pixels.length-1; p >=0 ; p--) {
-              if(p % font.width) {
+            for (p = pixels.length - 1; p >= 0; p--) {
+              if (p % font.width) {
                 pixels[p].className = pixels[p - 1].className;
               } else {
                 pixels[p].className = '';
               }
             }
             break;
-            
-           // Release
+
+            // Release
           case 'release':
             pixels = currentContainer.getElementsByTagName('td');
-            for(p = pixels.length-1; p >=0 ; p--) {
-              if(p % font.width) {
-                if ((pixels[p].className == 'out')&&(pixels[p - 1].className != 'out')) pixels[p].className = '';
-                }
+            for (p = pixels.length - 1; p >= 0; p--) {
+              if (p % font.width) {
+                if ((pixels[p].className == 'out') && (pixels[p - 1].className != 'out')) pixels[p].className = '';
+              }
             }
             break;
 
-          // Shift pixels down
+            // Shift pixels down
           case 'down':
             pixels = currentContainer.getElementsByTagName('td');
-            for(p = pixels.length-1; p >=0 ; p--) {
-              if(p >= font.width) {
+            for (p = pixels.length - 1; p >= 0; p--) {
+              if (p >= font.width) {
                 pixels[p].className = pixels[p - font.width].className;
               } else {
                 if (pixels[p].className == 'out') pixels[p].className = 'out';
                 else pixels[p].className = '';
               }
-            }            break;
+            }
+            break;
 
-          // Shift pixels up
+            // Shift pixels up
           case 'up':
             pixels = currentContainer.getElementsByTagName('td');
-            for(p = 0; p < pixels.length; p++) {
-              if(p < font.width*(font.height -1)) {
+            for (p = 0; p < pixels.length; p++) {
+              if (p < font.width * (font.height - 1)) {
                 pixels[p].className = pixels[p + font.width].className;
               } else {
                 if (pixels[p].className == 'out') pixels[p].className = 'out';
                 else pixels[p].className = '';
               }
-            }            
+            }
             break;
 
           case 'toggle':
@@ -581,23 +664,23 @@ SOFTWARE.
               pixels[p].className = '';
             }
             break;
-          
+
           case 'copy':
-             let charNumber = parseInt(prompt("Source char #: "));
-             let chars = font.fontContainer.getElementsByTagName('table');
-             let tableOffset = charNumber - parseInt(document.getElementById('code').value);
-             let srcPixels = chars[tableOffset].getElementsByTagName('td');
-             let targetPixels = currentContainer.getElementsByTagName('td');
-             for(let i=0; i < srcPixels.length; i++) {
-               // First tds are in the th row, for editing actions. Skip them
-               if (targetPixels[i].parentNode.localName === 'th') continue; // In case we give them css at some point...
-               targetPixels[i].className = srcPixels[i].className;
-             }
+            let charNumber = parseInt(prompt("Source char #: "));
+            let chars = font.fontContainer.getElementsByTagName('table');
+            let tableOffset = charNumber - parseInt(document.getElementById('code').value);
+            let srcPixels = chars[tableOffset].getElementsByTagName('td');
+            let targetPixels = currentContainer.getElementsByTagName('td');
+            for (let i = 0; i < srcPixels.length; i++) {
+              // First tds are in the th row, for editing actions. Skip them
+              if (targetPixels[i].parentNode.localName === 'th') continue; // In case we give them css at some point...
+              targetPixels[i].className = srcPixels[i].className;
+            }
             break;
           default:
             // no.
         }
-        
+
       });
       document.getElementById('chars').addEventListener('mouseover', function(e) {
         let target = e.target;
@@ -610,10 +693,10 @@ SOFTWARE.
       });
 
       document.getElementById('create').addEventListener('click', function() {
-        if ((document.getElementById('name').value < 1)||(document.getElementById('code').value < 1)||(document.getElementById('width').value < 1)||(document.getElementById('height').value < 1)) alert("Populate font specifications.");
+        if ((document.getElementById('name').value < 1) || (document.getElementById('code').value < 1) || (document.getElementById('width').value < 1) || (document.getElementById('height').value < 1)) alert("Populate font specifications.");
         else {
-           font = new Font();
-           font.addChar();
+          font = new Font();
+          font.addChar();
         }
       });
 
@@ -622,114 +705,94 @@ SOFTWARE.
       document.getElementById('parse').addEventListener('click', function() {
         if (document.getElementById('chars').childElementCount) {
           let result = confirm("Confirm you want to overwrite the existing grids ?");
-          if (!result) return;          
-        } 
-        let lines = document.getElementById('inputText').value.split('\n');
+          if (!result) return;
+        }
+
+        let fnts = document.getElementById('inputText').value;
+		let fnt = (fnts.split("};") || []);
+		let cntf = parseInt(fnt.length) - 1;
+
         let name = '';
         let height = 0;
         let width = 0;
         let firstCharCode = 0;
+        let numberOfChars = 0;
         let jumpTable = [];
         let charData = [];
-        let readingJumpTable = false;
-        let readingData = false;
-        
-        for(let l = document.getElementById('low').value; l < lines.length; l++) {
-          // TODO ? keep C compilation directives to copy them (not lowercased :)) to newly generated char array
-          let line = lines[l].trim();
-          //alert(line);
-          let fields;
-          
-          // Declaration line: grab the name
-          if (line.indexOf('PROGMEM') > 0) {
-            fields = line.split(' ');
-            name = fields[2].replace(/[\[\]]/g, '');
-            continue;
+		
+		let l = parseInt(document.getElementById('low').value);
+		
+		let data = fnt[l] + "};";
+		
+		if (l++ >= cntf) {
+			l = 0; 
+			document.getElementById('parse').value = "Parse";
+		} else {
+		    document.getElementById('parse').value = "Done (" + l + "/" + cntf + "), Next?";
+		}
+		//document.getElementById('nextfont').style.display = 'inline-block';
+        document.getElementById('low').value = l;
+		
+        data = data.replace(/\/\*[\s\S]*?\*\/|([^\\:]|^)\/\/.*$/gm, '$1');
+
+        name = data.split('char ').pop().split('[').shift();
+
+        data = data.replace(/\s+/g, '').trim();
+        data = data.split('{').pop().split('}').shift();
+        if (data.slice(-1) == ",") data = data.slice(0, -1);
+        data = data.split(','); // array
+
+        width = Font.prs(data[0]);
+        height = Font.prs(data[1]);
+        firstCharCode = Font.prs(data[2]);
+        numberOfChars = Font.prs(data[3]);
+
+        let jc = 4; // fist jump byte
+        let dc = 4 + 4 * numberOfChars; // first data byte
+
+        for (let c = 0; c < numberOfChars; c++) {
+          let newEntry = [];
+          for (let j = 0; j < 4; j++) { // create jump entry elements
+            newEntry.push(Font.prs(data[jc]));
+            jc++;
           }
-          line = line.toLowerCase();
-          // Todo: could rely on line order...
-          // width line: grab the width
-          if (line.indexOf('width') > 0) {
-            fields = line.split(',');
-            width = fields[0];
-            continue;
-          }
-          // height line: grab the height 
-          if (line.indexOf('height') > 0) {
-            fields = line.split(',');
-            height = fields[0];
-            continue;
-          }
-          // first char code line: grab the first char code 
-          if (line.indexOf('first char') > 0) {
-            fields = line.split(',');
-            firstCharCode = fields[0];
-            continue;
-          }
-          // End of array declaration
-          // TODO warn if more lines: next fonts are ignored
-          if ((line.indexOf('};') === 0) || (line.indexOf('};') > 0)) {
-            document.getElementById('low').value = l + 1;
-            document.getElementById('nextfont').style.display = 'inline-block';
-            break;
-          }
-          
-          if (readingJumpTable || readingData) {
-            if (line.indexOf('#') !== 0 && line.length !== 0 && line.indexOf('//') !== 0) {
-              line = line.replace(/\/\/.*/, ''); // get rid of end of line comments
-              fields = line.split(',');
-              let newEntry = [];
-              for(let f=0; f < fields.length; f++) {
-                let value = parseInt(fields[f]);
-                if (isNaN(value)) continue;
-                if (readingData) {
-                  charData.push(value);
-                }
-                if (readingJumpTable) {
-                  newEntry.push(value);
-                }
-              }
-              if (readingJumpTable) {
-                jumpTable.push(newEntry);
-              }
-            }            
-          }
-          
-          // Begining of data
-          if (line.indexOf('font data') > 0) {
-            readingData = true;
-            readingJumpTable = false;
-          }
-          // Begining of jump table
-          if (line.indexOf('jump table') > 0) {
-            readingJumpTable = true;
+          jumpTable.push(newEntry);
+
+          if (newEntry[0] !== 255 || newEntry[1] !== 255) {
+            for (let i = 0; i < newEntry[2]; i++) { // create data entry elements	    
+              charData.push(Font.prs(data[dc]));
+              dc++;
+            }
           }
         }
-        if (!name || !height || !width || !firstCharCode) {
+
+        if ((jumpTable.length < 1 )||(jumpTable.length != numberOfChars)||(cntf < 1)) {
           alert("Does not look like a parsable font. Try again.");
           return;
         }
-        
+
         Font.emptyChars();
         Font.emptyOutput();
         document.getElementById('name').value = name;
         document.getElementById('height').value = parseInt(height);
         document.getElementById('width').value = parseInt(width);
         document.getElementById('code').value = parseInt(firstCharCode);
-          font = new Font();
-          for(let c = 0 ; c < jumpTable.length; c++) {
-            let jumpEntry = jumpTable[c];
-            let charEntry = [];
-            // displayable character 
-            if (jumpEntry[0] !== 255 || jumpEntry[1] !== 255) {
-              charEntry = charData.splice(0, jumpEntry[2]);
+        font = new Font();
+        for (let c = 0; c < jumpTable.length; c++) {
+          let jumpEntry = jumpTable[c];
+          let charEntry = [];
+          // displayable character 
+          if (jumpEntry[0] !== 255 || jumpEntry[1] !== 255) {
+            charEntry = charData.splice(0, jumpEntry[2]);
           }
-            font.addChar(jumpEntry, charEntry);
+          font.addChar(jumpEntry, charEntry);
         }
         document.body.className = "started";
-      });        
-      
-      })();
-    </script>  
-  </body>
+        
+      });
+
+    })();
+  </script>
+</body>
+
 </html>
