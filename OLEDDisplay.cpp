@@ -782,8 +782,17 @@ uint8_t OLEDDisplay::utf8ascii(byte ascii) {
   LASTCHAR = ascii;
 
   switch (last) {    // conversion depnding on first UTF8-character
-    case 0xC2: return  (ascii);  break;
-    case 0xC3: return  (ascii | 0xC0);  break;
+    // 0xD0 and 0xD1 : Cyrillic, thanks bangka for this hint
+    case 0xD0: if (ascii == 0x81) return  (0xA8);   //Ё
+               else if (ascii >= 0x90 && ascii <= 0xBF) return  (ascii + 0x30);
+               break;
+    case 0xD1: if (ascii == 0x91) return  (0xB8);   //ё
+               else if (ascii >= 0x80 && ascii <= 0x8F) return  (ascii + 0x70);
+               break;
+    case 0xC2: return  (ascii);  
+               break;
+    case 0xC3: return  (ascii | 0xC0);  
+               break;
     case 0x82: if (ascii == 0xAC) return (0x80);    // special case Euro-symbol
   }
 
