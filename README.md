@@ -1,6 +1,16 @@
 esp8266-oled-ssd1306 [![Build Status](https://travis-ci.org/squix78/esp8266-oled-ssd1306.svg?branch=dev-branch-3.0.0)](https://travis-ci.org/squix78/esp8266-oled-ssd1306)
 ============
 
+----
+## Changes by Lorol
+* Added mirror and contrast to support SSD130**5** 2.7" 128x64 SPI CFAL12864xx-x Crystalfontz
+* Added and modified [glyphEditor](https://rawgit.com/lorol/esp8266-oled-ssd1306/master/resources/glyphEditor.html) JS tool based on [reivaxy](https://github.com/reivaxy/esp8266-oled-ssd1306) work
+* Cyrillic Fonts Support
+
+![FontTool](https://github.com/lorol/esp8266-oled-ssd1306/raw/master/resources/Cyr.jpg)
+
+----
+
 > We just released version 3.0.0. Please have a look at our [upgrade guide](UPGRADE-3.0.md)
 
 This is a driver for the SSD1306 based 128x64 pixel OLED display running on the Arduino/ESP8266 platform.

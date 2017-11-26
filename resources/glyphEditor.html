@@ -38,6 +38,17 @@ SOFTWARE.
 
 -->
   <style>
+    .tools {
+	   position:fixed;
+	   top:10px;
+	   right:5px;
+	   width:150px;
+	   height:125px;
+	   border-radius:10px;
+	   background-color:#fdfded;
+	   opacity:0.6;
+       text-align:center;
+	}
     #form,
     #chars table {
       user-select: none;
@@ -55,6 +66,7 @@ SOFTWARE.
       border: 1px solid #CCC;
       width: 12px;
       height: 15px;
+	  background-color: #FFF;
     }
     #chars th[action] {
       cursor: pointer;
@@ -75,6 +87,9 @@ SOFTWARE.
     #generate {
       display: none;
     }
+	body {
+	 background-color: #C4E5F0E6;
+	}
     body.started #addChar,
     body.started #generate {
       display: inline;
@@ -111,8 +126,9 @@ SOFTWARE.
 </head>
 
 <body>
+
   <center>
-    <h4>Glyph Font Editor, compatible with<br><a href="https://github.com/squix78/esp8266-oled-ssd1306">Squix78' OLED SD1306 screen library V3 format</a></h4>
+    <h3>Glyph Font Editor, compatible with<br><a href="https://github.com/squix78/esp8266-oled-ssd1306">Squix78' OLED SD1306 screen library V3 format</a></h3>
   </center>
   <ol>
     <li><b>Startup alternatives</b></li>
@@ -792,7 +808,14 @@ SOFTWARE.
       });
 
     })();
-  </script>
+  </script> 
+<div class="tools">
+  <b>Tools Menu:</b><br>
+  <a href='../../esp8266-oled-ssd1306/master/resources/glyphEditor.html' style='color:darkred;'>Font Editor</a><br>
+  <a href='../../esp8266-weather-station-color/master/resources/converter-tool/display.htm' style='color:darkred;'>Image Converter</a><br>
+  <a href='http://oleddisplay.squix.ch/' style='color:darkred;'>Online Font Converter</a><br>
+  <a href='https://forum.arduino.cc/index.php?topic=447956' style='color:darkred;'>MS Excel Tool</a><br>
+</div>     
 </body>
 
 </html>
