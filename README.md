@@ -3,12 +3,16 @@ esp8266-oled-ssd1306 [![Build Status](https://travis-ci.org/squix78/esp8266-oled
 
 ----
 ## Changes by Lorol
-* Added mirror and contrast to support SSD130**5** 2.7" 128x64 SPI CFAL12864xx-x Crystalfontz
-* Added and modified [glyphEditor](https://rawgit.com/lorol/esp8266-oled-ssd1306/master/resources/glyphEditor.html) JS tool based on [reivaxy](https://github.com/reivaxy/esp8266-oled-ssd1306) work
-* Cyrillic Fonts Support
+* OLED mirror and contrast tweaks to support SSD130**5** 2.7" 128x64 SPI CFAL12864xx-x Crystalfontz
+* Added Font [glyphEditor](https://rawgit.com/lorol/esp8266-oled-ssd1306/master/resources/glyphEditor.html) JS tool based on [reivaxy](https://github.com/reivaxy/esp8266-oled-ssd1306) work. Credits to Xavier Grosjean.
+* Added two NetBeans Java projects to [resources folder](https://github.com/lorol/esp8266-oled-ssd1306/raw/master/resources) as standalone font generators similar to oleddisplay.squix.ch online tool. JDK/JRE8 required to build /run.
+See the .bat files for more info. Credits again to Daniel Eichhorn (@squix78) and followers.
+* Cyrillic fonts support by custom font bitmap arrays and UTF-8 to Windows-1251 tweaks.
 
-![FontTool](https://github.com/lorol/esp8266-oled-ssd1306/raw/master/resources/Cyr.jpg)
+ ![FontTool](https://github.com/lorol/esp8266-oled-ssd1306/raw/master/resources/Cyr.jpg) 
 
+ The original README.md follows
+ 
 ----
 
 > We just released version 3.0.0. Please have a look at our [upgrade guide](UPGRADE-3.0.md)
