@@ -88,7 +88,7 @@ class SH1106Spi : public OLEDDisplay {
        // If the minBoundY wasn't updated
        // we can savely assume that buffer_back[pos] == buffer[pos]
        // holdes true for all values of pos
-       if (minBoundY == ~0) return;
+       if (minBoundY == (uint8_t) ~0) return;
 
        // Calculate the colum offset
        uint8_t minBoundXp2H = (minBoundX + 2) & 0x0F;
